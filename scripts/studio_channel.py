@@ -38,13 +38,17 @@ for studio in args.studio:
     if studio_items:
         print("Matching items:")
         for item in studio_items:
-            print(f"{item.studio} - {item.title}")
-        all_items.extend(studio_items)
+            if item.studio == studio:
+                print(f"{item.studio} - {item.title}")
+                all_items.append(item)
 
 if all_items:
     if not args.dry_run:
         dtv = API(url=args.dizquetv_url, verbose=args.verbose)
-        new_channel_number = max(dtv.channel_numbers) + 1
+        if len(dtv.channel_numbers):
+            new_channel_number = max(dtv.channel_numbers) + 1
+        else:
+            new_channel_number = 1
         final_programs = []
         for item in all_items:
             if item.type == 'movie':
