@@ -13,26 +13,23 @@ from dizqueTV import API
 import argparse
 from urllib.parse import quote
 
-# COMPLETE THESE SETTINGS
-DIZQUETV_URL = "http://localhost:8000"
-
-PLEX_URL = "http://localhost:32400"
-PLEX_TOKEN = "thisisaplextoken"
-
-#
-
 parser = argparse.ArgumentParser()
-parser.add_argument('studio',
+parser.add_argument('--studio',
                     nargs="+",
                     type=str,
+                    required=True,
                     help="name of studios, networks or platforms to find items from")
+parser.add_argument('--plex-token', type=str, required=True)
+parser.add_argument('--plex-url', type=str, required=True)
+parser.add_argument('--dizquetv-url', type=str, required=True)
 parser.add_argument("-s", "--shuffle", action="store_true", help="Shuffle items once channel is completed.")
 parser.add_argument("-v", "--verbose", action="store_true", help="Verbose (for debugging)")
+parser.add_argument("--dry-run", action="store_true")
 args = parser.parse_args()
 
 channel_name = ", ".join(name for name in args.studio)
 
-plex_server = server.PlexServer(PLEX_URL, PLEX_TOKEN)
+plex_server = server.PlexServer(args.plex_url, args.plex_token)
 
 all_items = []
 for studio in args.studio:
@@ -45,9 +42,8 @@ for studio in args.studio:
         all_items.extend(studio_items)
 
 if all_items:
-    answer = input("Would you like to proceed with making the channel? (Y/N) ")
-    if type(answer) == str and answer.lower().startswith('y'):
-        dtv = API(url=DIZQUETV_URL, verbose=args.verbose)
+    if not args.dry_run:
+        dtv = API(url=args.dizquetv_url, verbose=args.verbose)
         new_channel_number = max(dtv.channel_numbers) + 1
         final_programs = []
         for item in all_items:
